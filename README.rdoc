@@ -75,7 +75,7 @@ The ActiveSupport version keeps inheritable attribute values in a class-level
 @inheritable_attributes variable, which it copies whenever a new class is
 inherited.  Clafamatt stays closer to Ruby conventions by storing each
 attribute's value in a correspondingly-named class instance variable - so
-e.g. <code>Foo.bar = 42</code> will set the +@bar+ instance variable.  This is
+e.g. <code>Foo.bar = 42</code> will set the <code>@bar</code> instance variable.  This is
 consistent with how Ruby's built-in attr_* macros behave.  Beyond the variables
 used to store values, Clafamatt needs *zero* class instance variables for
 internal bookeeping.  It also doesn't copy variables on inheritance; instead, it
