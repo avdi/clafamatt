@@ -1,6 +1,6 @@
 clafamatt
-    by Avdi Grimm
-    http://clafamatt.rubyforge.org
+by Avdi Grimm
+http://clafamatt.rubyforge.org
 
 == DESCRIPTION:
 
