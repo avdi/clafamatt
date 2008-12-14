@@ -1,8 +1,10 @@
+#README.rdoc#
 History.txt
 Manifest.txt
 README.rdoc
 Rakefile
 bin/clafamatt
+examples/synopsys.rb
 lib/clafamatt.rb
 spec/clafamatt_spec.rb
 spec/spec_helper.rb
