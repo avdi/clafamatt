@@ -11,7 +11,7 @@ without all that tedious mucking about with +@inheritable_attributes+.
 
 * Fully Spec'd
 * reader/writer methods are cleanly partitioned in dynamically created modules
-* No class variables needed for bookkeeping!
+* No extra class variables needed for bookkeeping
 * Reader/writer methods are defined once and only once no matter how many classes 
   inherit them
 * Family inheritable attributes can be defined in modules
@@ -48,6 +48,7 @@ without all that tedious mucking about with +@inheritable_attributes+.
   Child.foo                       # => "nikto"
 
   Child.foo = "barada"
+  Shared.foo                      # => "klaatu"
   Parent.foo                      # => "nikto"
   Child.foo                       # => "barada"
 
@@ -62,15 +63,16 @@ Clafamatt sprung from a desire to have ActiveSupport-style class inheritable
 attributes without having all of ActiveSupport come with it.  It is also an
 attempt to implement class-inheritable attributes in the cleanest way possible.
 
-In contrast to the ActiveSupport version, which writes reader/writer directly
-into the class being extended, Clafamatt writes it's readers and writers into a
-dynamically created module which is then inserted into the class' (or module's)
-singleton class.  Among other benefits, this enables Clafamatt to transparently
-support defining inheritable attributes in either classes or modules.
+In contrast to the ActiveSupport version, which writes reader/writer methods
+directly into the class being extended, Clafamatt writes it's readers and
+writers into a dynamically created module which is then inserted into the class'
+(or module's) singleton class.  Among other benefits, this enables Clafamatt to
+transparently support defining inheritable attributes in either classes or
+modules.
 
-The ActiveSupport version also keeps inheritable attribute values in a
-class-level @inheritable_attributes variable, which it copies whenever a new
-class is inherited.  Clafamatt stays closer to Ruby conventions by storing each
+The ActiveSupport version keeps inheritable attribute values in a class-level
+@inheritable_attributes variable, which it copies whenever a new class is
+inherited.  Clafamatt stays closer to Ruby conventions by storing each
 attribute's value in a correspondingly-named class instance variable - so
 e.g. <code>Foo.bar = 42</code> will set the +@bar+ instance variable.  This is
 consistent with how Ruby's built-in attr_* macros behave.  Beyond the variables
