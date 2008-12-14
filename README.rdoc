@@ -10,24 +10,62 @@ without all that tedious mucking about with +@inheritable_attributes+.
 == FEATURES
 
 * Fully Spec'd
+* reader/writer macros are cleanly defined in dynamically-created modules
+* No class variables needed for bookkeeping!
 
 == SYNOPSIS:
 
-  FIXME (code sample of usage)
+  module Shared
+    include Clafamatt::Macros
+
+    class_family_accessor :foo
+  end
+
+  class Parent
+    include Shared
+
+  end
+
+  class Child < Parent
+    class_family_accessor :bar
+  end
+
+  Shared.foo                      # => nil
+  Parent.foo                      # => nil
+  Child.foo                       # => nil
+
+  Shared.foo = "klaatu"
+  Shared.foo                      # => "klaatu"
+  Parent.foo                      # => "klaatu"
+  Child.foo                       # => "klaatu"
+
+  Parent.foo = "nikto"
+  Shared.foo                      # => "klaatu"
+  Parent.foo                      # => "nikto"
+  Child.foo                       # => "nikto"
+
+  Child.foo = "barada"
+  Parent.foo                      # => "nikto"
+  Child.foo                       # => "barada"
+
+  Child.bar = "klaatu"
+  Child.bar                       # => "klaatu"
+  Parent.bar                      # => 
+  # ~> -:38: undefined method `bar' for Parent:Class (NoMethodError)
 
 == REQUIREMENTS:
 
-* FIXME (list of requirements)
+* Ruby!
 
 == INSTALL:
 
-* FIXME (sudo gem install, anything else)
+  sudo gem install clafamatt
 
 == LICENSE:
 
 (The MIT License)
 
-Copyright (c) 2008 FIXME (different license?)
+Copyright (c) 2008 Avdi Grimm
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
