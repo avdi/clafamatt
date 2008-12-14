@@ -15,6 +15,7 @@ without all that tedious mucking about with +@inheritable_attributes+.
 * Reader/writer methods are defined once and only once no matter how many classes 
   inherit them
 * Family inheritable attributes can be defined in modules
+* Will not pollute the global namespace.
 
 == SYNOPSIS:
 
@@ -80,6 +81,9 @@ used to store values, Clafamatt needs *zero* class instance variables for
 internal bookeeping.  It also doesn't copy variables on inheritance; instead, it
 simply re-uses values from farther up the inheritance chain until an attribute
 is explicitly set.
+
+Finally, Clafamatt is only there when you ask for it, by including
+Clafamatt::Macros.  It will not pollute the global namespace.
 
 == REQUIREMENTS:
 
