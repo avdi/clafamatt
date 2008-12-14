@@ -1,4 +1,3 @@
-
 module Clafamatt
 
   # :stopdoc:
@@ -42,6 +41,12 @@ module Clafamatt
   end
   # :startdoc:
 
+  # This might be better named SingletonModule.  A MacroModule acts as a
+  # container for singleton methods attached to a given class or module.  This
+  # way we can share singleton methods across arbitrary classes and modules.
+  #
+  # MacroModule also ensures that the class being "decorated" with a MacroModule
+  # of its own will also inherit all of its ancestors' macros.
   class MacroModule < Module
     def self.find_or_create_for(klass)
       mod = self.new(klass)
