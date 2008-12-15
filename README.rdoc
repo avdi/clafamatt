@@ -4,18 +4,16 @@ clafamatt
 
 == DESCRIPTION:
 
-ClaFamAtt (CLAss FAMily ATTributes) gives you class inheritable attributes
-without all that tedious mucking about with +@inheritable_attributes+.
+ClaFamAtt (CLAss FAMily ATTributes) is class inheritable attributes without the
+baggage.
 
 == FEATURES
 
 * Fully Spec'd
 * reader/writer methods are cleanly partitioned in dynamically created modules
 * No extra class variables needed for bookkeeping
-* Reader/writer methods are defined once and only once no matter how many classes 
-  inherit them
-* Family inheritable attributes can be defined in modules
-* Will not pollute the global namespace.
+* Family inheritable attributes can be defined in modules.
+* Only there when you want it - will not pollute the global namespace.
 
 == SYNOPSIS:
 
@@ -75,12 +73,12 @@ The ActiveSupport version keeps inheritable attribute values in a class-level
 @inheritable_attributes variable, which it copies whenever a new class is
 inherited.  Clafamatt stays closer to Ruby conventions by storing each
 attribute's value in a correspondingly-named class instance variable - so
-e.g. <code>Foo.bar = 42</code> will set the <code>@bar</code> instance variable.  This is
-consistent with how Ruby's built-in attr_* macros behave.  Beyond the variables
-used to store values, Clafamatt needs *zero* class instance variables for
-internal bookeeping.  It also doesn't copy variables on inheritance; instead, it
-simply re-uses values from farther up the inheritance chain until an attribute
-is explicitly set.
+e.g. <code>Foo.bar = 42</code> will set the <code>@bar</code> instance variable.
+This is consistent with how Ruby's built-in attr_* macros behave.  Beyond the
+variables used to store values, Clafamatt needs *zero* class instance variables
+for internal bookeeping.  It also doesn't copy variables on inheritance;
+instead, it simply re-uses values from farther up the inheritance chain until an
+attribute is explicitly set.
 
 Finally, Clafamatt is only there when you ask for it, by including
 Clafamatt::Macros.  It will not pollute the global namespace.
