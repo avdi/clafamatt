@@ -143,6 +143,15 @@ describe "Class Family Attributes:" do
       class_family_writer   :cwo      # Child Write-Only
       class_family_accessor :crw      # Child Read/Write
     end
+
+    @instance = @child.new
+    @singleton = class << @instance
+      def self.name; "Singleton"; end
+      class_family_reader   :sro      # Singleton Read-Only
+      class_family_writer   :swo      # Singleton Write-Only
+      class_family_accessor :srw      # Singleton Read/Write
+      self
+    end
   end
 
   describe "a module with CFAs" do
@@ -229,6 +238,7 @@ describe "Class Family Attributes:" do
       @parent.instance_variable_get(:@rw2).should == "doo"
     end
   end
+
   describe "defined in a child class" do
     it "should be able to read and write module-defined attributes" do
       @child.mrw = "klaatu"
@@ -264,6 +274,54 @@ describe "Class Family Attributes:" do
       @child.rw1.should == "bar"
     end
   end
+
+  describe "defined in a singleton class" do
+    it "should be able to read and write module-defined attributes" do
+      @singleton.mrw = "klaatu"
+      @singleton.mrw.should == "klaatu"
+      @shared.mrw.should be_nil
+    end
+    it "should be able to read and write parent-defined attributes" do
+      @singleton.rw1 = "barada"
+      @singleton.rw1.should == "barada"
+      @parent.rw1.should be_nil
+    end
+    it "should be able to read and write child-defined attributes" do
+      @singleton.crw = "nikto"
+      @singleton.crw.should == "nikto"
+    end
+    it "should be able to read and write singleton-defined attributes" do
+      @singleton.srw = "xyzzy"
+      @singleton.srw.should == "xyzzy"
+    end
+    it "should not define singleton attributes on child, parent or module" do
+      lambda do
+        @shared.srw = "foo"
+      end.should raise_error(NoMethodError)
+      lambda do
+        @parent.srw = "foo"
+      end.should raise_error(NoMethodError)
+      lambda do
+        @child.srw = "foo"
+      end.should raise_error(NoMethodError)
+    end
+
+    it "should inherit values from module-defined attributes" do
+      @shared.mrw = "foo"
+      @parent.mrw.should == "foo"
+      @singleton.mrw.should == "foo"
+    end
+
+    it "should inherit values from parent-defined attributes" do
+      @parent.rw1 = "bar"
+      @singleton.rw1.should == "bar"
+    end
+
+    it "should inherit values from child-defined attributes" do
+      @child.crw = "bar"
+      @singleton.crw.should == "bar"
+    end
+end
 end
 
 # EOF

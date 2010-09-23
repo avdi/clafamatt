@@ -149,11 +149,18 @@ module Clafamatt
       end
 
       def next_ancestor_responding_to(method)
-        ancestors.slice(1..-1).detect{|a| a.respond_to?(method)}
+        ancestor_start_index = singleton? ? 0 : 1
+        ancestors.slice(ancestor_start_index..-1).detect{|a|
+          a.respond_to?(method)
+        }
       end
 
       def can_pass?(method)
         next_ancestor_responding_to(method)
+      end
+
+      def singleton?
+        self != self.ancestors.first
       end
 
       def pass(method, *args, &block)
