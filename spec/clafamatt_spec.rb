@@ -30,6 +30,11 @@ describe Clafamatt::MacroModule do
       macro_module = @class.find_or_create_for(@decorated_class)
       macro_module.should equal(@it)
     end
+
+    it "should default to being in the :default namespave" do
+      @it.namespace.should == :default
+      @class.find_or_create_for(@decorated_class, :default).should equal(@it)
+    end
   end
 
   describe "decorating a child of a decorated class" do
@@ -115,6 +120,50 @@ describe Clafamatt::MacroModule do
         should == 1
       @child_class_singleton_ancestors.index(@module_macro_module).
         should == 2
+    end
+
+  end
+
+  describe "with an explicit namespace" do
+    before do
+      @mod = Module.new
+      @it  = @class.find_or_create_for(@mod, :foo)
+    end
+
+    it "should differ from the default namespace" do
+      @it.should_not equal(@class.find_or_create_for(@mod, :default))
+    end
+  end
+
+  describe "decorating multiple modules in a class ancestry" do
+    before do
+      mod1 = @mod1 = Module.new
+      @class.find_or_create_for(@mod1)
+      mod2 = @mod2 = Module.new
+      @class.find_or_create_for(@mod2)
+      mod3 = @mod3 = Module.new
+      @class.find_or_create_for(@mod3, :foo)
+      @host_class = Class.new do
+        include mod1
+        include mod2
+        include mod3
+      end
+    end
+
+    it "should be able to find all modules extended with a MM" do
+      results = @class.find_extended(@host_class)
+      results.should include(@mod1)
+      results.should include(@mod2)
+      results.should_not include(@mod3)
+      results.should_not include(@host_class)
+    end
+
+    it "should be able to find ancestors extended with an explicitly namespaced MM" do
+      results = @class.find_extended(@host_class, :foo)
+      results.should_not include(@mod1)
+      results.should_not include(@mod2)
+      results.should include(@mod3)
+      results.should_not include(@host_class)
     end
   end
 end

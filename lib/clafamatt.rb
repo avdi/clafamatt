@@ -48,8 +48,8 @@ module Clafamatt
   # MacroModule also ensures that the class being "decorated" with a MacroModule
   # of its own will also inherit all of its ancestors' macros.
   class MacroModule < Module
-    def self.find_or_create_for(klass)
-      mod = self.new(klass)
+    def self.find_or_create_for(klass, namespace = :default)
+      mod = self.new(klass, namespace)
       extend_klass = lambda do
         mod.extend_class!
         mod
@@ -59,20 +59,43 @@ module Clafamatt
         a == mod
       }
     end
+
     def self.find_all_for(klass)
       klass_singleton = class << klass; self; end
       klass_singleton.ancestors.grep(MacroModule)
     end
-    def initialize(decorated_class)
+
+    def self.find_extended(klass, namespace = :default)
+      candidates = [klass, *klass.ancestors].uniq
+      candidates.select{|c|
+        !find_for(c, namespace).nil?
+      }
+    end
+
+    def self.find_for(klass, namespace = :default)
+      klass_singleton = class << klass; self; end
+      klass_singleton.ancestors.detect{|a|
+        a.is_a?(MacroModule) && a.namespace == namespace
+      }
+    end
+
+    def initialize(decorated_class, namespace = :default)
       @decorated_class = decorated_class
+      @namespace       = namespace
     end
 
     def ==(other)
-      self.class == other.class && self.decorated_class == other.decorated_class
+      self.class == other.class &&
+        self.decorated_class == other.decorated_class &&
+        self.namespace == other.namespace
     end
 
     def inspect
       "#<Clafamatt::MacroModule:#{@decorated_class}:(#{self.instance_methods(false).join(", ")})>"
+    end
+
+    def namespace
+      @namespace
     end
 
     def copy_ancestor_macro_modules!
