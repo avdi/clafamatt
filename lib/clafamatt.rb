@@ -48,6 +48,9 @@ module Clafamatt
   # MacroModule also ensures that the class being "decorated" with a MacroModule
   # of its own will also inherit all of its ancestors' macros.
   class MacroModule < Module
+
+    # Find or create the macro module for +namespace+ associated with a given
+    # class (or module)
     def self.find_or_create_for(klass, namespace = :default)
       mod = self.new(klass, namespace)
       extend_klass = lambda do
@@ -60,11 +63,16 @@ module Clafamatt
       }
     end
 
-    def self.find_all_for(klass)
+    # Find all MacroModules associated with a given class or module
+    def self.find_all_for(klass, namespace = :default)
       klass_singleton = class << klass; self; end
-      klass_singleton.ancestors.grep(MacroModule)
+      klass_singleton.ancestors.grep(MacroModule).select{|a|
+        a.namespace == namespace
+      }
     end
 
+    # Find all classes and modules in a given class' ancestry which have
+    # associated MacroModules for the given namespace
     def self.find_extended(klass, namespace = :default)
       candidates = [klass, *klass.ancestors].uniq
       candidates.select{|c|
@@ -72,6 +80,14 @@ module Clafamatt
       }
     end
 
+    def self.find_all_for_ancestors(klass, namespace = :default)
+      klass.ancestors.map{|c|
+        find_for(c, namespace)
+      }.compact
+    end
+
+    # Given a class or module, find the associated MacroModule, if any. Returns
+    # +nil+ if there is no associated MacroModule in the given namespace.
     def self.find_for(klass, namespace = :default)
       klass_singleton = class << klass; self; end
       klass_singleton.ancestors.detect{|a|
@@ -79,11 +95,15 @@ module Clafamatt
       }
     end
 
+    # Create a new MacroModule for the given namespace, to be associated with
+    # the given class. Does not actually attach the module to the class.
     def initialize(decorated_class, namespace = :default)
       @decorated_class = decorated_class
       @namespace       = namespace
     end
 
+    # Equality is defined in terms of being associated with the same class, and
+    # being in the same namespace.
     def ==(other)
       self.class == other.class &&
         self.decorated_class == other.decorated_class &&
@@ -91,19 +111,19 @@ module Clafamatt
     end
 
     def inspect
-      "#<Clafamatt::MacroModule:#{@decorated_class}:(#{self.instance_methods(false).join(", ")})>"
+      "#<Clafamatt::MacroModule:#{@decorated_class}/#{namespace}:(#{self.instance_methods(false).join(", ")})>"
     end
 
+    # This MacroModule's namespace. A given class can have more than one
+    # MacroModule associated with it, for different namespaces.
     def namespace
       @namespace
     end
 
     def copy_ancestor_macro_modules!
-      @decorated_class.ancestors.each do |ancestor|
-        macro_modules = self.class.find_all_for(ancestor)
-        macro_modules.each do |mm|
-          @decorated_class.extend(mm)
-        end
+      macro_modules = self.class.find_all_for_ancestors(@decorated_class, namespace)
+      macro_modules.reverse.each do |mm|
+        @decorated_class.extend(mm)
       end
     end
 
@@ -137,6 +157,7 @@ module Clafamatt
           end
         end
       end
+
       def class_family_writer(*symbols)
         symbols.each do |name|
           setter = name.to_s + '='
@@ -146,10 +167,29 @@ module Clafamatt
           end
         end
       end
+
       def class_family_accessor(*symbols)
         class_family_reader(*symbols)
         class_family_writer(*symbols)
       end
+
+      def class_family_ancestors(attr_name)
+        MacroModule.find_extended(self, :clafamatt)
+      end
+
+      # Get all values for the attribute, starting at the nearest class
+      def class_family_values(attr_name)
+        class_family_ancestors(attr_name).map{|a| a.send(attr_name)}
+      end
+
+      # Get the mappings of ancestor class/module to attribute value as a hash
+      def class_family_properties(attr_name)
+        class_family_ancestors(attr_name).inject({}) {
+          |properties, ancestor|
+          properties.merge(ancestor => ancestor.send(attr_name))
+        }
+      end
+
 
       private
 
@@ -168,7 +208,7 @@ module Clafamatt
       end
 
       def clafamatt_macro_module
-        MacroModule.find_or_create_for(self)
+        MacroModule.find_or_create_for(self, :clafamatt)
       end
 
       def next_ancestor_responding_to(method)
